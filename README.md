@@ -14,7 +14,7 @@
 ---
 
 ## 🎯 Introduction
-his project (GenAIEmailClassification) consists of multiple Python files (for example, the main email classification logic in email_classification.py and maintenance tasks in maintenance.py). It leverages several external libraries for tasks like text extraction, natural language processing, machine learning inference, duplicate detection, and scheduled maintenance.
+The project (GenAIEmailClassification) consists of multiple Python files (for example, the main email classification logic in email_classification.py and maintenance tasks in maintenance.py). It leverages several external libraries for tasks like text extraction, natural language processing, machine learning inference, duplicate detection, and scheduled maintenance.
 
 ## 🎥 Demo
 🔗 [Live Demo](#) (if applicable)  
@@ -24,13 +24,25 @@ his project (GenAIEmailClassification) consists of multiple Python files (for ex
 ![Screenshot 1](link-to-image)
 
 ## 💡 Inspiration
-What inspired you to create this project? Describe the problem you're solving.
+To provide user friendly solution ; which routes emails and provides bird eye view of customer request based on content. Helping users save precious time for customer service.
 
 ## ⚙️ What It Does
-Explain the key features and functionalities of your project.
+* User Interface to add and maintain new request and sub-request types.
+* Auto training model (Trains based on LLM output) and trained model can be used (based on confidence) to avoid external calls to save cost.
+* Local classification model in absence of external LLM.
+* In depth email classification including attachment
+* Provide hints for routing the email to destination team
+* Duplicate recognition and hints on duplicate email (With description and importance based on intent of re-send email)
+
 
 ## 🛠️ How We Built It
-Briefly outline the technologies, frameworks, and tools used in development.
+Gen-Ai model built using python as back-end using:
+Python, Spacy, Transformers (Hugging Face)
+SentenceTransformers for embeddings
+DeepSeek API for classification
+pdfplumber, pytesseract for OCR
+Logging, dotenv, requests for integrations
+
 
 ## 🚧 Challenges We Faced
 Describe the major technical or non-technical challenges your team encountered.
@@ -91,6 +103,15 @@ python -m spacy download en_core_web_sm
 - 🔹 Database: -
 - 🔹 Other: OpenAI API
 
+Python, Spacy, Transformers (Hugging Face)
+SentenceTransformers for embeddings
+DeepSeek API for classification
+pdfplumber, pytesseract for OCR
+Logging, dotenv, requests for integrations
+
+
 ## 👥 Team
-- **Your Name** - [GitHub](#) | [LinkedIn](#)
-- **Teammate 2** - [GitHub](#) | [LinkedIn](#)
+- Shravankumar Mudrebettu
+- Atosh Veerabhadrannavar
+- Rajendra Malya
+- Kumara subramanya
