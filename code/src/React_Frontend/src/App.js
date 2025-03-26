@@ -56,6 +56,8 @@ const EmailClassificationUI = () => {
   const [error, setError] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [successMessage, setSuccessMessage] = useState("");
+  const [requestTypeOpen, setRequestTypeOpen] = useState(false);
+  const [subrequestOpen, setSubrequestOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteRequestTarget, setDeleteRequestTarget] = useState(null);
@@ -172,7 +174,7 @@ const EmailClassificationUI = () => {
     } catch (error) {
       setError("Failed to delete sub-request.");
     }
-    setConfirmOpen(false);
+    setSubrequestOpen(false);
     setDeleteTarget(null);
   };
 
@@ -195,8 +197,9 @@ const EmailClassificationUI = () => {
     } catch (error) {
       console.error("Failed to delete request type.");
     }
-    setConfirmOpen(false);
+    setRequestTypeOpen(false);
     setDeleteRequestTarget(null);
+    setOpen(false);
   };
 
   return (
@@ -254,7 +257,7 @@ const EmailClassificationUI = () => {
                         sx={{ mr: 1, mb: 1 }}
                         onDelete={() => {
                           setDeleteTarget({ requestId: req.id, subRequest: sub });
-                          setConfirmOpen(true);
+                          setSubrequestOpen(true);
                         }}
                         deleteIcon={<CancelIcon />}
                       />
@@ -266,7 +269,7 @@ const EmailClassificationUI = () => {
                       startIcon={<DeleteIcon />}
                       onClick={() => {
                         setDeleteRequestTarget(req);
-                        setConfirmOpen(true);
+                        setRequestTypeOpen(true);
                       }}
                     >
 
@@ -313,7 +316,7 @@ const EmailClassificationUI = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+      <Dialog open={subrequestOpen} onClose={() => setSubrequestOpen(false)}>
         <Box sx={{ p: 3, textAlign: "center" }}>
           <DialogTitle sx={{ color: "error.main", fontWeight: "bold" }}>Confirm Deletion</DialogTitle>
           <Divider sx={{ my: 1 }} />
@@ -323,7 +326,7 @@ const EmailClassificationUI = () => {
             </Typography>
           </DialogContent>
           <DialogActions sx={{ justifyContent: "center" }}>
-            <Button onClick={() => setConfirmOpen(false)} variant="outlined">No</Button>
+            <Button onClick={() => setSubrequestOpen(false)} variant="outlined">No</Button>
             <Button onClick={handleDeleteSubRequest} variant="contained" color="error">
               Yes
             </Button>
@@ -344,7 +347,7 @@ const EmailClassificationUI = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+      <Dialog open={requestTypeOpen} onClose={() => setRequestTypeOpen(false)}>
         <Box sx={{ p: 3, textAlign: "center" }}>
           <DialogTitle sx={{ color: "error.main", fontWeight: "bold" }}>Confirm Deletion</DialogTitle>
           <Divider sx={{ my: 1 }} />
@@ -354,7 +357,7 @@ const EmailClassificationUI = () => {
             </Typography>
           </DialogContent>
           <DialogActions sx={{ justifyContent: "center" }}>
-            <Button onClick={() => setConfirmOpen(false)} variant="outlined">No</Button>
+            <Button onClick={() => setRequestTypeOpen(false)} variant="outlined">No</Button>
             <Button onClick={handleDeleteRequest} variant="contained" color="error">
               Yes
             </Button>
