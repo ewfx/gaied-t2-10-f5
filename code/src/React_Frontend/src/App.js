@@ -17,9 +17,12 @@ import {
   DialogContent,
   DialogActions,
   Alert,
+  Box,
+  Divider,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 const getChipColor = (subRequest) => {
   if (!subRequest) return "default";
@@ -52,6 +55,8 @@ const EmailClassificationUI = () => {
   const [error, setError] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [successMessage, setSuccessMessage] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   // Filter based on request type (search ignores sub request types for simplicity)
 
@@ -119,7 +124,7 @@ const EmailClassificationUI = () => {
             subRequestType: newSubRequests.length > 0 ? newSubRequests : ["N/A"],
           },
         ]);
-        setSuccessMessage(response.data.message)
+        setSuccessMessage("New Email Request type is added successfully")
         setTimeout(() => setSuccessMessage(""), 2000);
 
         setOpen(false);
@@ -140,6 +145,33 @@ const EmailClassificationUI = () => {
     setError("");
     setNewRequestType("");
     setNewSubRequestType("");
+  };
+
+  const handleDeleteSubRequest = async () => {
+    if (!deleteTarget) return;
+    try {
+      const { requestId, subRequest } = deleteTarget;
+      await axios.delete("http://127.0.0.1:8000/delete-sub-request", {
+        data: { requestId, subRequest },
+      });
+
+      setRequests((prevRequests) =>
+        prevRequests.map((req) =>
+          req.id === requestId
+            ? {
+              ...req,
+              subRequestType: req.subRequestType.filter((sub) => sub !== subRequest),
+            }
+            : req
+        )
+      );
+      setSuccessMessage("Sub-request deleted successfully");
+      setTimeout(() => setSuccessMessage(""), 2000);
+    } catch (error) {
+      setError("Failed to delete sub-request.");
+    }
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   };
 
   return (
@@ -174,49 +206,36 @@ const EmailClassificationUI = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "primary.main" }}>
-              <TableCell
-                onClick={toggleSortOrder}
-                sx={{
-                  color: "white",
-                  fontWeight: "bold",
-                  borderRight: "1px solid white",
-                  cursor: "pointer",
-                }}
-              >
-                Request Type{" "}
-                {sortOrder === "asc" ? (
-                  <ArrowUpwardIcon fontSize="small" />
-                ) : (
-                  <ArrowDownwardIcon fontSize="small" />
-                )}
+              <TableCell onClick={toggleSortOrder} sx={{ color: "white", fontWeight: "bold", cursor: "pointer" }}>
+                Request Type {sortOrder === "asc" ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />}
               </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Sub Request Type
-              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Sub Request Type</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {requests?.length > 0 && requests?.map((req) => (
-              <TableRow key={req.id}>
-                <TableCell sx={{ borderRight: "1px solid #ccc" }}>
-                  {req.requestType}
-                </TableCell>
-                <TableCell>
-                  {req.subRequestType.length > 0 ? (
-                    req.subRequestType.map((sub, index) => (
+            {requests
+              .filter((req) => req.requestType.toLowerCase().includes(search.toLowerCase()))
+              .sort((a, b) => (sortOrder === "asc" ? a.requestType.localeCompare(b.requestType) : b.requestType.localeCompare(a.requestType)))
+              .map((req) => (
+                <TableRow key={req.id}>
+                  <TableCell sx={{ borderRight: "1px solid #ccc" }}>{req.requestType}</TableCell>
+                  <TableCell>
+                    {req.subRequestType.map((sub, index) => (
                       <Chip
                         key={index}
                         label={sub}
                         color={getChipColor(sub)}
                         sx={{ mr: 1, mb: 1 }}
+                        onDelete={() => {
+                          setDeleteTarget({ requestId: req.id, subRequest: sub });
+                          setConfirmOpen(true);
+                        }}
+                        deleteIcon={<CancelIcon />}
                       />
-                    ))
-                  ) : (
-                    "N/A"
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+                    ))}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </Paper>
@@ -254,6 +273,24 @@ const EmailClassificationUI = () => {
             Add
           </Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <Box sx={{ p: 3, textAlign: "center" }}>
+          <DialogTitle sx={{ color: "error.main", fontWeight: "bold" }}>Confirm Deletion</DialogTitle>
+          <Divider sx={{ my: 1 }} />
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Are you sure you want to delete this sub-request?
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: "center" }}>
+            <Button onClick={() => setConfirmOpen(false)} variant="outlined">No</Button>
+            <Button onClick={handleDeleteSubRequest} variant="contained" color="error">
+              Yes
+            </Button>
+          </DialogActions>
+        </Box>
       </Dialog>
     </Container>
   );
