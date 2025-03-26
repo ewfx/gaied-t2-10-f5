@@ -1,0 +1,12 @@
+numpy
+requests
+pdfplumber
+python-docx
+spacy
+python-dotenv
+sentence-transformers
+transformers
+scikit-learn
+schedule
+pytesseract
+pillow
