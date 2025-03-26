@@ -95,6 +95,9 @@ pip install -r requirements.txt
 Since the project uses spaCy for text processing, download the English language model by running:
 python -m spacy download en_core_web_sm
 
+## Add your API key in .env file
+DEEPSEEK_API_KEY=<API Key>
+
    ```
 
 ## 🏗️ Tech Stack
