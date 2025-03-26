@@ -1,0 +1,41 @@
+{
+	"info": {
+		"_postman_id": "c80c2550-26d3-481d-8f80-767ede037bdc",
+		"name": "Email Classification",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7555003"
+	},
+	"item": [
+		{
+			"name": "http://127.0.0.1:8000/process-email-file",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"file_path\": \"D:/GenAIEmailClassification-main/Testing.eml\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/process-email-file",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"process-email-file"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
