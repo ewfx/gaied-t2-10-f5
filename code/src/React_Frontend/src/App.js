@@ -23,6 +23,7 @@ import {
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CancelIcon from "@mui/icons-material/Cancel";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const getChipColor = (subRequest) => {
   if (!subRequest) return "default";
@@ -57,6 +58,7 @@ const EmailClassificationUI = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteRequestTarget, setDeleteRequestTarget] = useState(null);
 
   // Filter based on request type (search ignores sub request types for simplicity)
 
@@ -174,6 +176,29 @@ const EmailClassificationUI = () => {
     setDeleteTarget(null);
   };
 
+  const handleDeleteRequest = async () => {
+    if (!deleteRequestTarget) return;
+    try {
+      await axios.delete("http://127.0.0.1:8000/delete-category", {
+        data: {
+          requestId: deleteRequestTarget.id,
+          requestType: deleteRequestTarget.requestType,
+          subRequestType: deleteRequestTarget.subRequestType,
+        },
+      });
+
+      setRequests((prevRequests) =>
+        prevRequests.filter((req) => req.id !== deleteRequestTarget.id)
+      );
+      setSuccessMessage("Request type deleted successfully");
+      setTimeout(() => setSuccessMessage(""), 2000);
+    } catch (error) {
+      console.error("Failed to delete request type.");
+    }
+    setConfirmOpen(false);
+    setDeleteRequestTarget(null);
+  };
+
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>
@@ -210,6 +235,7 @@ const EmailClassificationUI = () => {
                 Request Type {sortOrder === "asc" ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />}
               </TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Sub Request Type</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -233,6 +259,18 @@ const EmailClassificationUI = () => {
                         deleteIcon={<CancelIcon />}
                       />
                     ))}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => {
+                        setDeleteRequestTarget(req);
+                        setConfirmOpen(true);
+                      }}
+                    >
+
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -287,6 +325,37 @@ const EmailClassificationUI = () => {
           <DialogActions sx={{ justifyContent: "center" }}>
             <Button onClick={() => setConfirmOpen(false)} variant="outlined">No</Button>
             <Button onClick={handleDeleteSubRequest} variant="contained" color="error">
+              Yes
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>Add New Request</DialogTitle>
+        <DialogContent>
+          {error && <Alert severity="warning">{error}</Alert>}
+          <TextField label="Request Type" fullWidth variant="outlined" value={newRequestType} onChange={(e) => setNewRequestType(e.target.value)} sx={{ mt: 2 }} />
+          <TextField label="Sub Request Types (comma separated)" fullWidth variant="outlined" value={newSubRequestType} onChange={(e) => setNewSubRequestType(e.target.value)} sx={{ mt: 2 }} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handleAddRequest} variant="contained">Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <Box sx={{ p: 3, textAlign: "center" }}>
+          <DialogTitle sx={{ color: "error.main", fontWeight: "bold" }}>Confirm Deletion</DialogTitle>
+          <Divider sx={{ my: 1 }} />
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Are you sure you want to delete this request type and all its sub-requests?
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: "center" }}>
+            <Button onClick={() => setConfirmOpen(false)} variant="outlined">No</Button>
+            <Button onClick={handleDeleteRequest} variant="contained" color="error">
               Yes
             </Button>
           </DialogActions>
