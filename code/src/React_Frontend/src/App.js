@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   TextField,
@@ -23,44 +23,27 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 const getChipColor = (subRequest) => {
   if (!subRequest) return "default";
-  // Customize color mapping as desired.
-  switch (subRequest) {
-    case "AU Transfer Reallocation Fees":
-      return "primary";
-    case "Amendment Fees":
-      return "secondary";
-    case "Reallocation Principal":
-      return "warning";
-    case "Cashless Roll":
-      return "primary";
-    case "Decrease":
-      return "secondary";
-    case "Increase":
-      return "warning";
-    case "Ongoing Fee":
-      return "success";
-    case "Letter of Credit Fee":
-      return "info";
-    case "Principal":
-      return "primary";
-    case "Interest":
-      return "secondary";
-    case "Principal + Interest":
-      return "success";
-    case "Principal + Interest + Fee":
-      return "info";
-    case "Timebound":
-      return "warning";
-    case "Foreign Currency":
-      return "error";
-    default:
-      return "default";
-  }
+
+  const colors = [
+    "primary",
+    "secondary",
+    "warning",
+    "success",
+    "info",
+    "error",
+  ];
+
+  // Create a hash-based index to pick a color consistently
+  const hash = subRequest
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  return colors[hash % colors.length]; // Pick color based on hash
 };
 
 const EmailClassificationUI = () => {
   // Initial request data from the sample provided in the PDF
-  const [requests, setRequests] = useState();
+  const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [newRequestType, setNewRequestType] = useState("");
@@ -68,9 +51,10 @@ const EmailClassificationUI = () => {
   const [newSubRequestType, setNewSubRequestType] = useState("");
   const [error, setError] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Filter based on request type (search ignores sub request types for simplicity)
-   
+
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -83,7 +67,7 @@ const EmailClassificationUI = () => {
     };
 
     fetchCategories();
-  }, []); 
+  }, []);
 
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -96,44 +80,60 @@ const EmailClassificationUI = () => {
       .split(",")
       .map((sub) => sub.trim().toLowerCase())
       .filter(Boolean);
-  
+
     // Check if request type already exists
     const existingRequest = requests.find(
       (req) => req.requestType.trim().toLowerCase() === normalizedNewRequestType
     );
-  
+
     if (existingRequest) {
       // If request type exists, check if the subrequest types also exist
       const existingSubRequests = existingRequest.subRequestType.map((sub) =>
         sub.trim().toLowerCase()
       );
-  
+
       const allSubRequestsExist = newSubRequests.every((sub) =>
         existingSubRequests.includes(sub)
       );
-  
+
       if (allSubRequestsExist) {
         setError("This request type with the same sub-request types already exists.");
         return;
       }
     }
-  
+
     try {
       const response = await axios.post("http://127.0.0.1:8000/add-category", {
+        id: requests.length + 1, // Assuming API assigns an ID
         requestType: newRequestType.trim(),
         subRequestType: newSubRequests.length > 0 ? newSubRequests : ["N/A"],
       });
-  
-      setRequests([...response.data.categories]);
-      setOpen(false);
-      setNewRequestType("");
-      setNewSubRequestType("");
-      setError("");
+
+      if (response?.data?.message) {  // ✅ Check if API confirms success
+        // ✅ Update the table with new data without refetching
+        setRequests((prevRequests) => [
+          ...prevRequests,
+          {
+            id: response.data.id, // Assuming API returns an ID for the new request
+            requestType: newRequestType.trim(),
+            subRequestType: newSubRequests.length > 0 ? newSubRequests : ["N/A"],
+          },
+        ]);
+        setSuccessMessage(response.data.message)
+        setTimeout(() => setSuccessMessage(""), 2000);
+
+        setOpen(false);
+        setNewRequestType("");
+        setNewSubRequestType("");
+        setError("");
+      } else {
+        setError("Failed to add request.");
+      }
     } catch (error) {
       setError(error.response?.data?.detail || "Error adding request.");
     }
   };
-  
+
 
   const handleCancel = () => {
     setOpen(false);
@@ -147,6 +147,11 @@ const EmailClassificationUI = () => {
       <Typography variant="h5" gutterBottom>
         Email Request Classification
       </Typography>
+      {successMessage && ( // ✅ Display success banner
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {successMessage}
+        </Alert>
+      )}
       <TextField
         fullWidth
         label="Search Requests"
@@ -191,7 +196,7 @@ const EmailClassificationUI = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {requests?.length>0 && requests?.map((req) => (
+            {requests?.length > 0 && requests?.map((req) => (
               <TableRow key={req.id}>
                 <TableCell sx={{ borderRight: "1px solid #ccc" }}>
                   {req.requestType}
